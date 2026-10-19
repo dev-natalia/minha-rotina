@@ -1,5 +1,15 @@
 {% extends "base.html" %}
+{% block titulo %}Início · minha-rotina{% endblock %}
+{% block estilos %}
+<link rel="stylesheet" href="/static/css/rotina.css">
+<link rel="stylesheet" href="/static/css/painel.css">
+{% endblock %}
 {% block conteudo %}
-<h1>Olá, {{ usuario.nome }}</h1>
-<p class="suave">O painel chega em breve.</p>
+<header class="painel-cabecalho">
+  <p class="suave">{{ data_extenso }}</p>
+  <h1>{{ saudacao }}, {{ usuario.nome }}</h1>
+</header>
+
+{% include "painel/_secao_rotina.html" %}
+{% include "painel/_secao_contadores.html" %}
 {% endblock %}

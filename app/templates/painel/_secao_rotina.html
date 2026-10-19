@@ -1,0 +1,26 @@
+<section class="secao-painel" aria-labelledby="titulo-rotina-hoje">
+  <div class="secao-cabecalho">
+    <h2 id="titulo-rotina-hoje">Rotina de hoje</h2>
+    <a href="/rotina">Ver semana</a>
+  </div>
+  {% if atividades %}
+  <ol class="rotina-hoje">
+    {% for a, estado in atividades %}
+    <li class="{{ estado }}">
+      <span class="hora">{{ a.hora_inicio.strftime('%H:%M') }}</span>
+      <a href="/rotina/atividades/{{ a.id }}/editar" class="cor-{{ a.cor or 'verde' }}">
+        <span class="marcador" aria-hidden="true"></span>
+        <span class="titulo">{{ a.titulo }}</span>
+        {% if estado == "agora" %}<span class="selo">agora</span>
+        {% elif estado == "passada" %}<span class="sr-only">(já terminou)</span>{% endif %}
+      </a>
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <div class="cartao vazio-painel">
+    <p>Nada planejado para hoje.</p>
+    <a class="botao" href="/rotina">Abrir rotina</a>
+  </div>
+  {% endif %}
+</section>

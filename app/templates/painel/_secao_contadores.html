@@ -1,0 +1,20 @@
+<section class="secao-painel" aria-labelledby="titulo-contadores-hoje">
+  <div class="secao-cabecalho">
+    <h2 id="titulo-contadores-hoje">Contadores de hoje</h2>
+    <a href="/contadores">Ver todos</a>
+  </div>
+  {% if contadores %}
+  <div class="lista-contadores">
+    {% for contador in contadores %}
+    {% with total = totais.get(contador.id, 0), pode_desfazer = contador.id in desfazer %}
+    {% include "contadores/_contador.html" %}
+    {% endwith %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="cartao vazio-painel">
+    <p>Você ainda não tem contadores.</p>
+    <a class="botao" href="/contadores/novo">Criar contador</a>
+  </div>
+  {% endif %}
+</section>
