@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="theme-color" content="#4f7d55">
+  <title>{% block titulo %}minha-rotina{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script src="/static/vendor/htmx.min.js" defer></script>
+  <script src="/static/js/app.js" defer></script>
+</head>
+<body{% if csrf_token %} hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'{% endif %} class="{% if usuario %}com-nav{% endif %}">
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  {% if usuario %}
+  <header class="topo">
+    <a class="marca" href="/">minha-rotina</a>
+    <a class="botao-icone" href="/conta" aria-label="Sua conta"{% if request.url.path == "/conta" %} aria-current="page"{% endif %}>
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+    </a>
+  </header>
+  {% include "_nav.html" %}
+  {% endif %}
+  <main id="conteudo" tabindex="-1" class="{% block classe_main %}conteudo{% endblock %}">
+    {% block conteudo %}{% endblock %}
+  </main>
+  <div id="anuncio" class="sr-only" aria-live="polite"></div>
+</body>
+</html>

@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 
 import pytest
@@ -70,3 +71,32 @@ def cliente(db):
     app.dependency_overrides[get_db] = lambda: db
     with TestClient(app) as c:
         yield c
+
+
+def ler_csrf(html: str) -> str:
+    achado = re.search(r'<meta name="csrf-token" content="([^"]+)"', html)
+    assert achado, "página sem meta csrf-token"
+    return achado.group(1)
+
+
+def entrar(cliente, email: str, senha: str = SENHA_TESTE):
+    r = cliente.post("/login", data={"email": email, "senha": senha}, follow_redirects=False)
+    assert r.status_code == 303, r.text
+    cliente.csrf = ler_csrf(cliente.get("/conta").text)
+    return cliente
+
+
+@pytest.fixture
+def cliente_logado(cliente, usuario):
+    return entrar(cliente, usuario.email)
+
+
+@pytest.fixture
+def post():
+    def _post(cliente, url: str, dados: dict | None = None, htmx: bool = False, **kwargs):
+        dados = {"csrf_token": cliente.csrf, **(dados or {})}
+        headers = {"HX-Request": "true"} if htmx else {}
+        kwargs.setdefault("follow_redirects", False)
+        return cliente.post(url, data=dados, headers=headers, **kwargs)
+
+    return _post

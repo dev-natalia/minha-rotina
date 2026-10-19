@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titulo %}Conta · minha-rotina{% endblock %}
+{% block conteudo %}
+<h1>Sua conta</h1>
+
+<section class="cartao" aria-labelledby="titulo-dados">
+  <h2 id="titulo-dados">Dados</h2>
+  <dl class="dados">
+    <dt>Nome</dt><dd>{{ usuario.nome }}</dd>
+    <dt>Email</dt><dd>{{ usuario.email }}</dd>
+  </dl>
+</section>
+
+<section class="cartao" aria-labelledby="titulo-fuso">
+  <h2 id="titulo-fuso">Fuso horário</h2>
+  <p class="suave">Define quando o seu dia começa e termina nos contadores.</p>
+  {% if erro %}<p class="alerta" role="alert" id="erro-fuso">{{ erro }}</p>{% endif %}
+  {% if request.query_params.get("salvo") %}<p class="aviso" role="status">Fuso horário salvo.</p>{% endif %}
+  <form method="post" action="/conta/fuso" class="formulario">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="campo">
+      <label for="fuso_horario">Fuso (ex.: America/Sao_Paulo)</label>
+      <input id="fuso_horario" name="fuso_horario" value="{{ fuso_digitado }}" required
+             {% if erro %}aria-invalid="true" aria-describedby="erro-fuso"{% endif %}>
+    </div>
+    <button type="submit" class="botao">Salvar fuso</button>
+  </form>
+</section>
+
+<form method="post" action="/sair">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <button type="submit" class="botao botao-discreto">Sair</button>
+</form>
+{% endblock %}

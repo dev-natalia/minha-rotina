@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar · minha-rotina{% endblock %}
+{% block classe_main %}conteudo conteudo-estreito{% endblock %}
+{% block conteudo %}
+<div class="cartao entrada">
+  <h1>minha-rotina</h1>
+  <p class="suave">Entre para ver seu dia.</p>
+  {% if erro %}<p class="alerta" role="alert">{{ erro }}</p>{% endif %}
+  <form method="post" action="/login" class="formulario">
+    <div class="campo">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" required value="{{ email }}"{% if not email %} autofocus{% endif %}>
+    </div>
+    <div class="campo">
+      <label for="senha">Senha</label>
+      <input id="senha" name="senha" type="password" autocomplete="current-password" required{% if email %} autofocus{% endif %}>
+    </div>
+    <button type="submit" class="botao botao-primario">Entrar</button>
+  </form>
+</div>
+{% endblock %}
