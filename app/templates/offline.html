@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titulo %}Sem conexão · minha-rotina{% endblock %}
+{% block classe_main %}conteudo conteudo-estreito{% endblock %}
+{% block conteudo %}
+<div class="cartao">
+  <h1>Sem conexão</h1>
+  <p class="suave">Não foi possível falar com o servidor. Confira sua internet e tente de novo.</p>
+  <button type="button" class="botao botao-primario" onclick="location.reload()">Tentar de novo</button>
+</div>
+{% endblock %}
