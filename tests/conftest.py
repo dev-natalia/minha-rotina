@@ -44,6 +44,23 @@ def db(engine_teste):
         conexao.close()
 
 
+SENHA_TESTE = "senha-segura-1"
+
+
+@pytest.fixture
+def usuario(db):
+    from app.auth.service import criar_usuario
+
+    return criar_usuario(db, "ana@example.com", "Ana", SENHA_TESTE)
+
+
+@pytest.fixture
+def outro_usuario(db):
+    from app.auth.service import criar_usuario
+
+    return criar_usuario(db, "bia@example.com", "Bia", SENHA_TESTE)
+
+
 @pytest.fixture
 def cliente(db):
     from app.db import get_db
