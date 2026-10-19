@@ -2,3 +2,4 @@
 
 import app.auth.models  # noqa: F401
 import app.rotina.models  # noqa: F401
+import app.contadores.models  # noqa: F401
