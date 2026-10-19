@@ -38,8 +38,11 @@ Pré-requisito: [flyctl](https://fly.io/docs/flyctl/install/) instalado e `fly a
 ```bash
 fly launch --no-deploy --copy-config      # cria o app usando o fly.toml (aceite o nome ou troque)
 fly secrets set DATABASE_URL="postgresql://...neon.tech/neondb?sslmode=require"
-fly deploy                                # constrói, roda as migrações (release_command) e publica
+fly deploy --local-only                   # constrói no seu Docker, roda as migrações (release_command) e publica
 ```
+
+> Use `--local-only`: nesta conta o builder remoto do Fly recusou o envio da imagem (401/403).
+> Com `--local-only` a imagem é construída pelo Docker da sua máquina e enviada pronta.
 
 Conferir:
 
@@ -67,7 +70,7 @@ Desativar bloqueia o acesso na hora (as sessões abertas deixam de valer) e pres
 
 ```bash
 uv run pytest      # tudo verde antes de publicar
-fly deploy         # as migrações novas rodam sozinhas antes da versão nova entrar no ar
+fly deploy --local-only   # as migrações novas rodam sozinhas antes da versão nova entrar no ar
 ```
 
 ## 6. Backup diário no Cloudflare R2
@@ -143,6 +146,7 @@ O Neon também guarda um histórico próprio (*point-in-time restore*), útil pa
 
 | Sintoma | O que verificar |
 |---|---|
+| `curl` no Windows falha com "Connection was reset" / `schannel` | Problema do cliente, não do app: use `curl -4 --ssl-no-revoke` ou teste no navegador. |
 | `/healthz` falha | `fly logs`; o `DATABASE_URL` está certo? O projeto no Neon está ativo? |
 | Deploy para no `release_command` | Migração com erro: rode `uv run alembic upgrade head` localmente contra uma branch do Neon para ver a mensagem. |
 | Muitos "Email ou senha incorretos" | Após 5 erros em 15 minutos o email fica bloqueado por um tempo; espere ou redefina a senha pelo CLI. |
