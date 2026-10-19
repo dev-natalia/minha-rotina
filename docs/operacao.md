@@ -103,18 +103,29 @@ O script usa o `DATABASE_URL` do app. Para usar outra conexão (por exemplo, a s
 ### 6.3 Agendar a máquina de backup
 
 ```bash
-fly machine run . --dockerfile Dockerfile.backup --schedule daily --restart no --region gru --name backup-diario
+# 1) Constrói a imagem de backup no seu Docker e envia ao registro do Fly (não publica nada no app).
+fly deploy --build-only --push --local-only --dockerfile Dockerfile.backup --image-label backup
+#    Confira no log de build: "load build definition from Dockerfile.backup" e "postgres:17-alpine".
+#    Anote o digest que aparece no fim ("backup: digest: sha256:...").
+
+# 2) Cria a máquina agendada apontando para esse digest exato.
+fly machine run registry.fly.io/<seu-app>@sha256:<digest> --schedule daily --restart no --region gru --name backup-diario --vm-memory 256 --detach
 ```
 
-Conferir a primeira execução:
+> Não coloque `dockerfile = ...` na seção `[build]` do `fly.toml`: essa configuração passa por cima do
+> `--dockerfile Dockerfile.backup` e a "imagem de backup" sai igual à do app (foi o que aconteceu na primeira tentativa).
+
+A máquina já roda uma vez ao ser criada. Conferir:
 
 ```bash
-fly machine list                       # a máquina backup-diario aparece
-fly logs --machine <id-da-maquina>     # deve terminar com "Backup concluído: minha-rotina/....dump"
+fly machine list                       # backup-diario aparece como "stopped" depois de terminar
+fly logs --no-tail --machine <id>      # deve ter "Backup concluído: minha-rotina/....dump" e "exited normally with code: 0"
 ```
 
-Se a máquina não enxergar os secrets, passe-os explicitamente com `--env` no comando acima.
-Depois confira no painel do R2 se o arquivo `.dump` apareceu no bucket.
+A máquina recebe os secrets do app automaticamente. Confira também no painel do R2 se o `.dump` apareceu.
+
+Para atualizar o script de backup no futuro: repita o passo 1, destrua a máquina antiga
+(`fly machine destroy <id>`) e crie de novo com o digest novo.
 
 ## 7. Restaurar um backup
 

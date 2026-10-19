@@ -6,9 +6,6 @@
 app = 'minha-rotina'
 primary_region = 'gru'
 
-[build]
-  dockerfile = 'Dockerfile'
-
 [deploy]
   release_command = 'alembic upgrade head'
 
