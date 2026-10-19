@@ -66,6 +66,17 @@ fly ssh console -C "python -m app.cli desativar-usuario --email pessoa@exemplo.c
 
 Desativar bloqueia o acesso na hora (as sessões abertas deixam de valer) e preserva os dados.
 
+Se aparecer **"app has no started VMs"**: as máquinas desligam quando ninguém usa o app. Ligue uma e rode
+o comando logo em seguida, indicando a máquina:
+
+```bash
+fly machine list                         # pegue o ID de uma máquina do app (não a backup-diario)
+fly machine start <id>
+fly ssh console --machine <id> -C "python -m app.cli criar-usuario --email ... --nome ..."
+```
+
+Abrir o site no navegador também liga uma máquina. "TLS handshake timeout" é instabilidade de rede: repita o comando.
+
 ## 5. Atualizações
 
 ```bash
