@@ -1,0 +1,25 @@
+{% if atividades %}
+<div class="lista-semana">
+  {% for d in dias %}
+  <section class="lista-dia{% if d.data == hoje %} hoje{% endif %}" aria-labelledby="lista-{{ d.data.isoformat() }}">
+    <h2 id="lista-{{ d.data.isoformat() }}">{{ d.nome }} <span class="suave">{{ d.data.day }}</span>
+      {% if d.data == hoje %}<span class="selo">hoje</span>{% endif %}</h2>
+    {% if d.atividades %}
+    <ul>
+      {% for a in d.atividades %}
+      <li>
+        <a href="/rotina/atividades/{{ a.id }}/editar">
+          <span class="marcador cor-{{ a.cor or 'verde' }}" aria-hidden="true"></span>
+          <span class="hora">{{ a.hora_inicio.strftime('%H:%M') }}–{{ a.hora_fim.strftime('%H:%M') }}</span>
+          <span>{{ a.titulo }}</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="suave">Nada planejado.</p>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% endif %}

@@ -45,10 +45,12 @@ def create_app() -> FastAPI:
     from app.auth.routes import router as auth_router
     from app.painel.routes import router as painel_router
     from app.pwa.routes import router as pwa_router
+    from app.rotina.routes import router as rotina_router
 
     app.include_router(auth_router)
     app.include_router(painel_router)
     app.include_router(pwa_router)
+    app.include_router(rotina_router)
     return app
 
 

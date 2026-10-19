@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Copiar semana · minha-rotina{% endblock %}
+{% block estilos %}<link rel="stylesheet" href="/static/css/rotina.css">{% endblock %}
+{% block conteudo %}
+<p><a href="/rotina?semana={{ segunda.isoformat() }}">← Voltar para a rotina</a></p>
+<h1>Copiar semana anterior</h1>
+<div class="cartao">
+  {% if erro %}
+  <p class="alerta" role="alert">{{ erro }}</p>
+  <a class="botao" href="/rotina?semana={{ segunda.isoformat() }}">Voltar</a>
+  {% else %}
+  <p>Semana de {{ titulo_semana }}.</p>
+  <p><strong>Isso vai substituir as atividades desta semana. Continuar?</strong></p>
+  <form method="post" action="/rotina/copiar-semana" class="botoes">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="semana" value="{{ segunda.isoformat() }}">
+    <input type="hidden" name="confirmar" value="sim">
+    <button type="submit" class="botao botao-primario">Substituir e copiar</button>
+    <a class="botao" href="/rotina?semana={{ segunda.isoformat() }}">Cancelar</a>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+<ul class="seletor-dias" aria-label="Dias da semana">
+  {% for d in dias %}
+  <li>
+    <a href="/rotina?semana={{ segunda.isoformat() }}&dia={{ d.data.isoformat() }}"
+       aria-label="{{ d.nome }}, {{ d.data.day }}{% if d.data == hoje %} (hoje){% endif %}"
+       class="{% if d.data == hoje %}hoje{% endif %}"
+       {% if d.data == dia_atual %}aria-current="date"{% endif %}>
+      <span aria-hidden="true">{{ d.curto }}</span>
+      <small aria-hidden="true">{{ d.data.day }}</small>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+
+{% for d in dias if d.data == dia_atual %}
+<section class="dia" aria-labelledby="titulo-dia" data-deslizar>
+  <h2 id="titulo-dia" class="sr-only">{{ d.nome }}, {{ d.data.day }}</h2>
+  {% if d.atividades %}
+  <ol class="linha-do-tempo">
+    {% for a in d.atividades %}
+    <li>
+      <span class="hora">{{ a.hora_inicio.strftime('%H:%M') }}</span>
+      <a class="item cor-{{ a.cor or 'verde' }}" href="/rotina/atividades/{{ a.id }}/editar">
+        <strong>{{ a.titulo }}</strong>
+        <span>{{ a.hora_inicio.strftime('%H:%M') }} – {{ a.hora_fim.strftime('%H:%M') }}</span>
+        {% if a.descricao %}<span class="descricao">{{ a.descricao }}</span>{% endif %}
+      </a>
+    </li>
+    {% endfor %}
+  </ol>
+  {% elif atividades %}
+  <p class="suave vazio-dia">Nada planejado para este dia.</p>
+  {% endif %}
+</section>
+{% endfor %}
