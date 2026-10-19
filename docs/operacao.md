@@ -59,10 +59,14 @@ desliga quando ninguém usa e liga no primeiro acesso (o primeiro carregamento p
 As contas só são criadas pela linha de comando:
 
 ```bash
-fly ssh console -C "python -m app.cli criar-usuario --email pessoa@exemplo.com --nome Nome"
-fly ssh console -C "python -m app.cli redefinir-senha --email pessoa@exemplo.com"
-fly ssh console -C "python -m app.cli desativar-usuario --email pessoa@exemplo.com"
+fly ssh console --pty -C "python -m app.cli criar-usuario --email pessoa@exemplo.com --nome Nome"
+fly ssh console --pty -C "python -m app.cli redefinir-senha --email pessoa@exemplo.com"
+fly ssh console --pty -C "python -m app.cli desativar-usuario --email pessoa@exemplo.com"
 ```
+
+Use sempre `--pty`: sem ele o `fly ssh console -C` não abre um terminal de verdade, a senha aparece na tela e,
+no Windows, o Enter chegava como `
+` (o CLI agora descarta esse ``, mas o `--pty` evita o problema de vez).
 
 Desativar bloqueia o acesso na hora (as sessões abertas deixam de valer) e preserva os dados.
 
@@ -72,7 +76,7 @@ o comando logo em seguida, indicando a máquina:
 ```bash
 fly machine list                         # pegue o ID de uma máquina do app (não a backup-diario)
 fly machine start <id>
-fly ssh console --machine <id> -C "python -m app.cli criar-usuario --email ... --nome ..."
+fly ssh console --pty --machine <id> -C "python -m app.cli criar-usuario --email ... --nome ..."
 ```
 
 Abrir o site no navegador também liga uma máquina. "TLS handshake timeout" é instabilidade de rede: repita o comando.

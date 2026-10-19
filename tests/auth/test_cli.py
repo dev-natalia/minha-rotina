@@ -33,6 +33,14 @@ def test_cli_criar_usuario(db, cli_no_banco_de_teste, monkeypatch):
     assert u is not None and u.nome == "C"
 
 
+def test_cli_ignora_retorno_de_carro_do_windows(db, cli_no_banco_de_teste, monkeypatch):
+    # `fly ssh console -C` no Windows não abre TTY: o Enter chega como "\r\n" e o "\r" sobrava na senha.
+    _senhas(monkeypatch, "senha-segura-1\r", "senha-segura-1\r")
+    assert cli.main(["criar-usuario", "--email", "c@x.com", "--nome", "C"]) == 0
+    u = _buscar(db, "c@x.com")
+    assert verificar_senha(u.senha_hash, "senha-segura-1")
+
+
 def test_cli_senhas_diferentes_falha(db, cli_no_banco_de_teste, monkeypatch):
     _senhas(monkeypatch, "senha-segura-1", "senha-diferente")
     assert cli.main(["criar-usuario", "--email", "c@x.com", "--nome", "C"]) == 1

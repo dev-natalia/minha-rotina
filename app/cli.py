@@ -26,9 +26,14 @@ def abrir_sessao() -> Iterator[Session]:
         yield sessao
 
 
+def _ler_senha(prompt: str) -> str:
+    # Sem TTY (ex.: `fly ssh console -C` no Windows) o Enter chega como "\r\n" e o "\r" ficava na senha.
+    return getpass(prompt).rstrip("\r\n")
+
+
 def _pedir_senha() -> str | None:
-    senha = getpass("Senha: ")
-    if getpass("Repita a senha: ") != senha:
+    senha = _ler_senha("Senha: ")
+    if _ler_senha("Repita a senha: ") != senha:
         print("As senhas não conferem.", file=sys.stderr)
         return None
     return senha
