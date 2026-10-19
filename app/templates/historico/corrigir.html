@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Corrigir lançamento · minha-rotina{% endblock %}
+{% block estilos %}<link rel="stylesheet" href="/static/css/historico.css">{% endblock %}
+{% block conteudo %}
+<p><a href="/historico?contador={{ contador.id }}">← Voltar para o histórico</a></p>
+<h1>Corrigir lançamento</h1>
+<p class="suave">{{ contador.nome }}. O lançamento original fica no histórico, marcado como corrigido.</p>
+
+{% if erro %}<p class="alerta" role="alert">{{ erro }}</p>{% endif %}
+
+<form method="post" action="/historico/lancamentos/{{ lancamento.id }}/corrigir" class="formulario cartao">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="campo">
+    <label for="quantidade">Quantidade ({{ contador.unidade }})</label>
+    <input id="quantidade" name="quantidade" inputmode="numeric" value="{{ valores.quantidade }}" required>
+  </div>
+  <div class="linha-campos">
+    <div class="campo">
+      <label for="data">Data</label>
+      <input id="data" name="data" type="date" value="{{ valores.data }}" required>
+    </div>
+    <div class="campo">
+      <label for="hora">Hora</label>
+      <input id="hora" name="hora" type="time" value="{{ valores.hora }}" required>
+    </div>
+  </div>
+  <button type="submit" class="botao botao-primario">Salvar correção</button>
+</form>
+{% endblock %}

@@ -77,11 +77,15 @@ def registrar(
     return lancamento
 
 
-def _obter_lancamento(db: Session, usuario_id: int, lancamento_id: int) -> Lancamento:
-    lancamento = db.get(Lancamento, lancamento_id, with_for_update=True)
+def obter_lancamento(db: Session, usuario_id: int, lancamento_id: int, para_alterar: bool = False) -> Lancamento:
+    lancamento = db.get(Lancamento, lancamento_id, with_for_update=para_alterar)
     if lancamento is None or lancamento.usuario_id != usuario_id:
         raise NaoEncontrado()
     return lancamento
+
+
+def _obter_lancamento(db: Session, usuario_id: int, lancamento_id: int) -> Lancamento:
+    return obter_lancamento(db, usuario_id, lancamento_id, para_alterar=True)
 
 
 def _filtro_validos_no_periodo(inicio: datetime, fim: datetime):

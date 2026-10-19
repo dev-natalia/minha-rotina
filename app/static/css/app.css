@@ -131,8 +131,10 @@ body.com-nav .conteudo { padding-bottom: calc(var(--nav-altura) + 32px + env(saf
 .botao-icone[aria-current="page"] { color: var(--acento-escuro); }
 .botao:disabled { opacity: .45; cursor: not-allowed; }
 
-.formulario { display: grid; gap: 16px; }
-.campo { display: grid; gap: 6px; }
+.formulario { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+.campo { display: grid; gap: 6px; min-width: 0; }
+/* Campos de data/hora têm largura mínima própria; sem isso estouram a tela no celular. */
+input, select, textarea { min-width: 0; max-width: 100%; }
 .campo label { font-weight: 600; font-size: .95rem; }
 input, select, textarea {
   min-height: var(--toque); padding: 8px 12px; width: 100%;

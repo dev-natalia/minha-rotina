@@ -1,0 +1,34 @@
+/* ---- Histórico ---- */
+
+.filtros { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 640px) {
+  .filtros { grid-template-columns: minmax(0, 1.3fr) minmax(0, 2fr) minmax(0, 1fr) auto; align-items: end; }
+  .filtros .linha-campos { margin: 0; }
+}
+
+.linha-tres { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr); gap: 10px; }
+
+.tabela { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.tabela th, .tabela td { padding: 8px 4px; text-align: left; border-bottom: 1px solid var(--borda); }
+.tabela thead th { font-size: .85rem; color: var(--texto-suave); font-weight: 600; }
+.tabela tbody th { font-weight: 400; }
+.tabela .numero { text-align: right; }
+.tabela abbr { text-decoration: none; color: var(--texto-suave); }
+
+.lista-lancamentos { list-style: none; margin: 0; padding: 0; }
+.lista-lancamentos li {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px;
+  padding: 8px 0; border-bottom: 1px solid var(--borda);
+}
+.lista-lancamentos li:last-child { border-bottom: 0; }
+.lista-lancamentos li:target { background: var(--acento-fundo); border-radius: var(--raio-pequeno); }
+.lancamento-dados { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.lancamento-quando { color: var(--texto-suave); font-size: .9rem; font-variant-numeric: tabular-nums; min-width: 6.5em; }
+.lista-lancamentos .cancelado .lancamento-dados { color: var(--texto-suave); }
+.estado { font-size: .85rem; color: var(--texto-suave); font-style: italic; }
+.lista-lancamentos .botoes { gap: 0; }
+.lista-lancamentos form { margin: 0; }
+.selo {
+  font: 700 .7rem var(--sans); text-transform: uppercase; letter-spacing: .04em;
+  background: var(--acento-claro); color: var(--acento-escuro); padding: 2px 8px; border-radius: 999px;
+}
