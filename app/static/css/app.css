@@ -68,6 +68,7 @@ a { color: var(--acento-escuro); }
 }
 .marca {
   font-family: var(--serifa); font-size: 1.1rem; color: var(--texto); text-decoration: none;
+  display: inline-flex; align-items: center; min-height: var(--toque);
 }
 
 .conteudo { padding: 8px 16px 32px; max-width: 720px; margin: 0 auto; }

@@ -52,7 +52,12 @@ body:has(.conteudo-largo) .topo { max-width: 1100px; }
 
 /* Vista Grade */
 .grade { --altura-hora: 44px; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); overflow: hidden; }
-.grade-cabecalho, .grade-corpo { display: grid; grid-template-columns: 30px repeat(7, 1fr); }
+.grade-cabecalho, .grade-corpo { display: grid; grid-template-columns: 20px repeat(7, minmax(0, 1fr)); }
+/* No celular a grade usa a largura toda: blocos lado a lado ficam com pelo menos 24px (WCAG 2.5.8). */
+@media (max-width: 899px) {
+  .grade { margin: 0 -16px; border-radius: 0; border-left: 0; border-right: 0; }
+  .grade-horas { padding-right: 2px; }
+}
 .grade-cabecalho { border-bottom: 1px solid var(--borda); }
 .grade-dia {
   display: flex; flex-direction: column; align-items: center; padding: 6px 0;
@@ -63,14 +68,15 @@ body:has(.conteudo-largo) .topo { max-width: 1100px; }
 .grade-corpo { height: calc(var(--horas) * var(--altura-hora)); }
 .grade-horas { display: grid; grid-auto-rows: var(--altura-hora); font-size: .7rem; color: var(--texto-suave); text-align: right; padding-right: 4px; }
 .grade-coluna {
-  position: relative; border-left: 1px solid var(--borda);
+  /* Linhas desenhadas com sombra, sem ocupar largura (blocos lado a lado precisam de 24px). */
+  position: relative; box-shadow: inset 1px 0 0 var(--borda);
   background-image: linear-gradient(var(--borda) 1px, transparent 1px);
   background-size: 100% var(--altura-hora);
 }
 .grade-coluna.hoje { background-color: #fbfaf6; }
 .bloco {
   position: absolute; padding: 2px 4px; overflow: hidden;
-  border: 1px solid var(--superficie); border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--superficie); border-radius: 6px;
   background: var(--cor-fundo); color: var(--cor-texto); text-decoration: none;
   font-size: .7rem; line-height: 1.2;
 }
@@ -78,7 +84,7 @@ body:has(.conteudo-largo) .topo { max-width: 1100px; }
 .bloco-hora { display: none; }
 @media (min-width: 900px) {
   .grade { --altura-hora: 52px; }
-  .grade-cabecalho, .grade-corpo { grid-template-columns: 44px repeat(7, 1fr); }
+  .grade-cabecalho, .grade-corpo { grid-template-columns: 44px repeat(7, minmax(0, 1fr)); }
   .bloco { font-size: .8rem; padding: 4px 6px; }
   .bloco-hora { display: block; opacity: .85; }
   .grade-dia { font-size: .9rem; }

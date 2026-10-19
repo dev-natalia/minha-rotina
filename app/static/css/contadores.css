@@ -8,7 +8,7 @@
   background: var(--superficie); border: 1px solid var(--borda); border-radius: 999px;
 }
 .seletor a {
-  display: inline-flex; align-items: center; min-height: 36px; padding: 0 16px; border-radius: 999px;
+  display: inline-flex; align-items: center; min-height: var(--toque); padding: 0 16px; border-radius: 999px;
   color: var(--texto-suave); font-weight: 600; text-decoration: none;
 }
 .seletor a[aria-current="true"] { background: var(--acento); color: #fff; }
