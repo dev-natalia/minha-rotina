@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titulo %}Gerenciar contadores · minha-rotina{% endblock %}
+{% block conteudo %}
+<p><a href="/contadores">← Voltar para os contadores</a></p>
+<div class="cabecalho-pagina">
+  <h1>Gerenciar contadores</h1>
+  <a class="botao botao-primario" href="/contadores/novo"><span aria-hidden="true">+</span> Novo</a>
+</div>
+
+{% macro linha(c) %}
+<li class="linha-contador">
+  <div>
+    <strong>{{ c.nome }}</strong>
+    <span class="suave">{{ c.unidade }} · soma {{ c.passo }} por toque{% if descricao_meta(c) %} · meta: {{ descricao_meta(c) }}{% endif %}</span>
+  </div>
+  <div class="botoes">
+    <a class="botao" href="/contadores/{{ c.id }}/editar" aria-label="Editar {{ c.nome }}">Editar</a>
+    <form method="post" action="/contadores/{{ c.id }}/ativo">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      {% if c.ativo %}
+      <button type="submit" name="ativo" value="nao" class="botao botao-discreto" aria-label="Desativar {{ c.nome }}">Desativar</button>
+      {% else %}
+      <button type="submit" name="ativo" value="sim" class="botao botao-discreto" aria-label="Ativar {{ c.nome }}">Ativar</button>
+      {% endif %}
+    </form>
+  </div>
+</li>
+{% endmacro %}
+
+<section class="cartao" aria-labelledby="titulo-ativos">
+  <h2 id="titulo-ativos">Ativos</h2>
+  {% if ativos %}<ul class="lista-gerenciar">{% for c in ativos %}{{ linha(c) }}{% endfor %}</ul>
+  {% else %}<p class="suave">Nenhum contador ativo.</p>{% endif %}
+</section>
+
+{% if inativos %}
+<section class="cartao" aria-labelledby="titulo-inativos">
+  <h2 id="titulo-inativos">Inativos</h2>
+  <p class="suave">Não aparecem no painel, mas o histórico continua disponível.</p>
+  <ul class="lista-gerenciar">{% for c in inativos %}{{ linha(c) }}{% endfor %}</ul>
+</section>
+{% endif %}
+{% endblock %}

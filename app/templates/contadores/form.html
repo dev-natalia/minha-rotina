@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block titulo %}{{ "Editar contador" if contador else "Novo contador" }} · minha-rotina{% endblock %}
+{% block conteudo %}
+<p><a href="{{ '/contadores/gerenciar' if contador else '/contadores' }}">← Voltar</a></p>
+<h1>{{ "Editar contador" if contador else "Novo contador" }}</h1>
+
+{% if erro %}<p class="alerta" role="alert" id="erro-form">{{ erro }}</p>{% endif %}
+
+<form method="post" action="{{ '/contadores/%d' % contador.id if contador else '/contadores' }}" class="formulario cartao">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+  <div class="campo">
+    <label for="nome">Nome</label>
+    <input id="nome" name="nome" value="{{ valores.nome }}" required maxlength="60" autocomplete="off"
+           placeholder="Ex.: Cigarros, Água, Estudo">
+  </div>
+
+  <div class="linha-campos">
+    <div class="campo">
+      <label for="unidade">Unidade</label>
+      <input id="unidade" name="unidade" value="{{ valores.unidade }}" required maxlength="30" autocomplete="off"
+             placeholder="Ex.: unidade, copo, minuto">
+    </div>
+    <div class="campo">
+      <label for="passo">Soma por toque no +</label>
+      <input id="passo" name="passo" type="number" inputmode="numeric" min="1" step="1" value="{{ valores.passo }}" required>
+    </div>
+  </div>
+
+  <fieldset>
+    <legend>Meta <span class="suave">(opcional)</span></legend>
+    <div class="linha-meta">
+      <label class="sr-only" for="meta_sentido">Sentido da meta</label>
+      <select id="meta_sentido" name="meta_sentido">
+        <option value="maximo" {% if valores.meta_sentido == "maximo" %}selected{% endif %}>No máximo</option>
+        <option value="minimo" {% if valores.meta_sentido == "minimo" %}selected{% endif %}>Pelo menos</option>
+      </select>
+      <label class="sr-only" for="meta_valor">Valor da meta</label>
+      <input id="meta_valor" name="meta_valor" type="number" inputmode="numeric" min="1" step="1" value="{{ valores.meta_valor }}" placeholder="—">
+      <label class="sr-only" for="meta_periodo">Período da meta</label>
+      <select id="meta_periodo" name="meta_periodo">
+        <option value="dia" {% if valores.meta_periodo == "dia" %}selected{% endif %}>por dia</option>
+        <option value="mes" {% if valores.meta_periodo == "mes" %}selected{% endif %}>por mês</option>
+        <option value="ano" {% if valores.meta_periodo == "ano" %}selected{% endif %}>por ano</option>
+      </select>
+    </div>
+    <p class="suave dica">Deixe o valor vazio para não ter meta.</p>
+  </fieldset>
+
+  {% if not contador %}
+  <fieldset>
+    <legend>Valor inicial <span class="suave">(opcional)</span></legend>
+    <p class="suave dica">Para começar com o que você já tinha antes do app, como "40 treinos".</p>
+    <div class="linha-campos">
+      <div class="campo">
+        <label for="valor_inicial">Quantidade</label>
+        <input id="valor_inicial" name="valor_inicial" type="number" inputmode="numeric" min="0" step="1" value="{{ valores.valor_inicial }}">
+      </div>
+      <div class="campo">
+        <label for="valor_inicial_data">Data</label>
+        <input id="valor_inicial_data" name="valor_inicial_data" type="date" value="{{ valores.valor_inicial_data }}">
+      </div>
+    </div>
+  </fieldset>
+  {% endif %}
+
+  <button type="submit" class="botao botao-primario">{{ "Salvar" if contador else "Criar contador" }}</button>
+</form>
+{% endblock %}
