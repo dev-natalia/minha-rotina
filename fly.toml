@@ -1,0 +1,33 @@
+# Configuração do Fly.io. O nome do app pode ser trocado no primeiro `fly launch`.
+app = "minha-rotina"
+primary_region = "gru"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[deploy]
+  # Roda as migrações antes de cada versão nova entrar no ar.
+  release_command = "alembic upgrade head"
+
+[env]
+  AMBIENTE = "producao"
+  COOKIE_SECURE = "true"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/healthz"
+    timeout = "5s"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

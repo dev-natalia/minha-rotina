@@ -1,0 +1,13 @@
+.git
+.venv
+.env
+.superpowers
+.claude
+.pytest_cache
+**/__pycache__
+tests
+docs
+docker
+scripts/*
+!scripts/backup.sh
+*.dump

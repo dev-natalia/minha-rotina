@@ -1,0 +1,149 @@
+# Operação do minha-rotina
+
+Guia para colocar o app no ar, administrar contas e cuidar dos backups.
+
+- **App:** Fly.io (região `gru`, São Paulo), imagem do `Dockerfile`.
+- **Banco:** PostgreSQL no Neon.
+- **Backup:** `pg_dump` diário enviado ao Cloudflare R2 (`Dockerfile.backup` + `scripts/backup.sh`), guardado por 30 dias.
+
+---
+
+## 1. Desenvolvimento local
+
+```bash
+docker compose up -d                    # Postgres 17 (bancos rotina e rotina_test)
+cp .env.example .env                    # na primeira vez
+uv run alembic upgrade head             # cria/atualiza as tabelas
+uv run uvicorn app.main:app --reload    # http://localhost:8000
+uv run pytest                           # testes (usam o banco rotina_test)
+```
+
+Criar um usuário local (rode num terminal de verdade: a senha é digitada sem aparecer):
+
+```bash
+uv run python -m app.cli criar-usuario --email voce@exemplo.com --nome "Seu nome"
+```
+
+## 2. Banco no Neon (uma vez)
+
+1. Crie um projeto no Neon, na região **AWS São Paulo (sa-east-1)** se disponível, com **Postgres 17**.
+2. Copie a *connection string* do banco (formato `postgresql://usuario:senha@ep-....neon.tech/neondb?sslmode=require`).
+   O app aceita esse formato como está; não precisa trocar nada.
+3. Use a string **com pooling** (host com `-pooler`) para o app.
+
+## 3. Primeiro deploy no Fly (uma vez)
+
+Pré-requisito: [flyctl](https://fly.io/docs/flyctl/install/) instalado e `fly auth login` feito.
+
+```bash
+fly launch --no-deploy --copy-config      # cria o app usando o fly.toml (aceite o nome ou troque)
+fly secrets set DATABASE_URL="postgresql://...neon.tech/neondb?sslmode=require"
+fly deploy                                # constrói, roda as migrações (release_command) e publica
+```
+
+Conferir:
+
+```bash
+fly status
+curl https://<seu-app>.fly.dev/healthz    # deve responder {"ok":true}
+```
+
+O app usa HTTPS automaticamente em `https://<seu-app>.fly.dev`. Com `min_machines_running = 0`, a máquina
+desliga quando ninguém usa e liga no primeiro acesso (o primeiro carregamento pode levar alguns segundos).
+
+## 4. Contas de usuário em produção
+
+As contas só são criadas pela linha de comando:
+
+```bash
+fly ssh console -C "python -m app.cli criar-usuario --email pessoa@exemplo.com --nome Nome"
+fly ssh console -C "python -m app.cli redefinir-senha --email pessoa@exemplo.com"
+fly ssh console -C "python -m app.cli desativar-usuario --email pessoa@exemplo.com"
+```
+
+Desativar bloqueia o acesso na hora (as sessões abertas deixam de valer) e preserva os dados.
+
+## 5. Atualizações
+
+```bash
+uv run pytest      # tudo verde antes de publicar
+fly deploy         # as migrações novas rodam sozinhas antes da versão nova entrar no ar
+```
+
+## 6. Backup diário no Cloudflare R2
+
+### 6.1 Preparar o R2 (uma vez)
+
+1. No painel da Cloudflare: **R2 → Create bucket**, por exemplo `minha-rotina-backups`.
+2. No bucket: **Settings → Object lifecycle rules → Add rule**: apagar objetos com prefixo `minha-rotina/`
+   **30 dias** depois de criados. É isso que mantém só os últimos 30 dias.
+3. **R2 → Manage API tokens → Create API token** com permissão **Object Read & Write** só nesse bucket.
+   Anote o *Access Key ID*, o *Secret Access Key* e o endpoint `https://<account_id>.r2.cloudflarestorage.com`.
+
+### 6.2 Configurar no Fly (uma vez)
+
+```bash
+fly secrets set \
+  R2_ENDPOINT="https://<account_id>.r2.cloudflarestorage.com" \
+  R2_BUCKET="minha-rotina-backups" \
+  AWS_ACCESS_KEY_ID="<access key id>" \
+  AWS_SECRET_ACCESS_KEY="<secret access key>"
+```
+
+Opcional, mas recomendado: crie um check gratuito em [healthchecks.io](https://healthchecks.io) com período de 1 dia
+e configure `fly secrets set BACKUP_PING_URL="https://hc-ping.com/<uuid>"`. Se o backup falhar ou não rodar,
+você recebe um email.
+
+O script usa o `DATABASE_URL` do app. Para usar outra conexão (por exemplo, a sem pooling, recomendada para
+`pg_dump`), defina `BACKUP_DATABASE_URL`.
+
+### 6.3 Agendar a máquina de backup
+
+```bash
+fly machine run . --dockerfile Dockerfile.backup --schedule daily --restart no --region gru --name backup-diario
+```
+
+Conferir a primeira execução:
+
+```bash
+fly machine list                       # a máquina backup-diario aparece
+fly logs --machine <id-da-maquina>     # deve terminar com "Backup concluído: minha-rotina/....dump"
+```
+
+Se a máquina não enxergar os secrets, passe-os explicitamente com `--env` no comando acima.
+Depois confira no painel do R2 se o arquivo `.dump` apareceu no bucket.
+
+## 7. Restaurar um backup
+
+Teste a restauração de vez em quando (pelo menos uma vez depois de configurar). O procedimento abaixo foi
+validado localmente: o banco restaurado ficou com as mesmas linhas em todas as tabelas.
+
+1. Baixe o arquivo do R2 (painel da Cloudflare ou `aws s3 cp s3://<bucket>/minha-rotina/<arquivo>.dump . --endpoint-url <R2_ENDPOINT>`).
+2. No Neon, crie uma **branch** nova (por exemplo `restauracao-teste`). Nunca restaure direto em cima do banco principal sem antes testar.
+3. Restaure na branch:
+
+   ```bash
+   pg_restore --no-owner --no-privileges --exit-on-error -d "postgresql://...branch...neon.tech/neondb?sslmode=require" arquivo.dump
+   ```
+
+4. Confira as contagens:
+
+   ```sql
+   select count(*) from usuarios;
+   select count(*) from atividades_planejadas;
+   select count(*) from contadores;
+   select count(*) from lancamentos;
+   ```
+
+5. Para usar a restauração de verdade, aponte o app para ela: `fly secrets set DATABASE_URL="<url da branch>"` (o app reinicia sozinho).
+
+O Neon também guarda um histórico próprio (*point-in-time restore*), útil para desfazer algo das últimas horas sem precisar do dump.
+
+## 8. Problemas comuns
+
+| Sintoma | O que verificar |
+|---|---|
+| `/healthz` falha | `fly logs`; o `DATABASE_URL` está certo? O projeto no Neon está ativo? |
+| Deploy para no `release_command` | Migração com erro: rode `uv run alembic upgrade head` localmente contra uma branch do Neon para ver a mensagem. |
+| Muitos "Email ou senha incorretos" | Após 5 erros em 15 minutos o email fica bloqueado por um tempo; espere ou redefina a senha pelo CLI. |
+| Backup não aparece no R2 | `fly logs --machine <id>`; confira `R2_ENDPOINT`, `R2_BUCKET` e o token. |
