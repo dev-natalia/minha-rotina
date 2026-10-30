@@ -51,8 +51,23 @@ fly status
 curl https://<seu-app>.fly.dev/healthz    # deve responder {"ok":true}
 ```
 
-O app usa HTTPS automaticamente em `https://<seu-app>.fly.dev`. Com `min_machines_running = 0`, a máquina
-desliga quando ninguém usa e liga no primeiro acesso (o primeiro carregamento pode levar alguns segundos).
+O app usa HTTPS automaticamente em `https://<seu-app>.fly.dev`. A máquina fica **sempre ligada**
+(`auto_stop_machines = "off"`, `min_machines_running = 1`): não há espera de cold start no primeiro acesso.
+
+Ela roda com **256 MB** de propósito: dois apps sempre ligados (`minha-rotina` + `caderno-de-gastos`)
+somam 512 + 256 = 768 MB, que é exatamente a franquia do plano legado do Fly (3 VMs `shared-cpu-1x 256MB`).
+Subir para 512 MB faz a conta passar da franquia (~US$ 2–3/mês).
+
+### Só IPv4 (sem IPv6 dedicado)
+
+O app **não** tem endereço IPv6 dedicado — só o IPv4 compartilhado. Boa parte dos acessos via IPv6
+(principalmente em rede móvel) dava erro ou ficava pendurada antes de cair para o IPv4. Para conferir:
+
+```bash
+fly ips list -a minha-rotina        # deve aparecer só a linha "v4 ... public ingress (shared)"
+```
+
+Se um dia aparecer um IPv6 dedicado, remova com `fly ips release <endereço> -a minha-rotina`.
 
 ## 4. Contas de usuário em produção
 
@@ -70,8 +85,8 @@ no Windows, o Enter chegava como `
 
 Desativar bloqueia o acesso na hora (as sessões abertas deixam de valer) e preserva os dados.
 
-Se aparecer **"app has no started VMs"**: as máquinas desligam quando ninguém usa o app. Ligue uma e rode
-o comando logo em seguida, indicando a máquina:
+Se aparecer **"app has no started VMs"**: a máquina do app agora fica sempre ligada, então isso só deve
+acontecer se ela tiver sido parada à mão. Ligue e rode o comando logo em seguida, indicando a máquina:
 
 ```bash
 fly machine list                         # pegue o ID de uma máquina do app (não a backup-diario)
@@ -79,7 +94,7 @@ fly machine start <id>
 fly ssh console --pty --machine <id> -C "python -m app.cli criar-usuario --email ... --nome ..."
 ```
 
-Abrir o site no navegador também liga uma máquina. "TLS handshake timeout" é instabilidade de rede: repita o comando.
+Abrir o site no navegador também liga a máquina. "TLS handshake timeout" é instabilidade de rede: repita o comando.
 
 ## 5. Atualizações
 
