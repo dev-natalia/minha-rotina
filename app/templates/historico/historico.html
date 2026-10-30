@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block titulo %}Histórico · minha-rotina{% endblock %}
+{% block estilos %}<link rel="stylesheet" href="/static/css/historico.css">{% endblock %}
+{% block conteudo %}
+<h1>Histórico</h1>
+
+{% if not contadores %}
+<div class="cartao vazio">
+  <h2>Você ainda não tem contadores.</h2>
+  <p class="suave">O histórico mostra tudo o que você registrar nos contadores.</p>
+  <a class="botao botao-primario" href="/contadores/novo">Criar contador</a>
+</div>
+{% else %}
+
+<form method="get" action="/historico" class="cartao filtros">
+  <div class="campo">
+    <label for="contador">Contador</label>
+    <select id="contador" name="contador">
+      {% for c in contadores %}
+      <option value="{{ c.id }}"{% if contador and c.id == contador.id %} selected{% endif %}>{{ c.nome }}{% if not c.ativo %} (inativo){% endif %}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="linha-campos">
+    <div class="campo">
+      <label for="de">De</label>
+      <input id="de" name="de" type="date" value="{{ de.isoformat() }}"{% if erro_datas %} aria-invalid="true" aria-describedby="erro-datas"{% endif %}>
+    </div>
+    <div class="campo">
+      <label for="ate">Até</label>
+      <input id="ate" name="ate" type="date" value="{{ ate.isoformat() }}">
+    </div>
+  </div>
+  <div class="campo">
+    <label for="agrupar">Totais por</label>
+    <select id="agrupar" name="agrupar">
+      {% for valor, nome in agrupamentos %}
+      <option value="{{ valor }}"{% if valor == agrupar %} selected{% endif %}>{{ nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="botao">Filtrar</button>
+</form>
+
+{% if erro_datas %}<p class="alerta" role="alert" id="erro-datas">{{ erro_datas }}</p>{% endif %}
+
+{% if contador and not erro_datas %}
+<section class="cartao" aria-labelledby="titulo-totais">
+  <h2 id="titulo-totais">Totais de {{ contador.nome }}</h2>
+  <table class="tabela">
+    <caption class="sr-only">Total de {{ contador.unidade }} por {{ dict(agrupamentos)[agrupar]|lower }}</caption>
+    <thead><tr><th scope="col">{{ dict(agrupamentos)[agrupar] }}</th><th scope="col" class="numero">Total ({{ contador.unidade }})</th></tr></thead>
+    <tbody>
+      {% for g in grupos %}
+      <tr>
+        <th scope="row">{{ rotulo_grupo(g, agrupar) }}</th>
+        <td class="numero">{% if g.total is none %}<abbr title="sem registros">—</abbr>{% else %}{{ g.total }}{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="suave dica">"—" significa que não há registros no período, o que é diferente de zero.</p>
+</section>
+
+<section class="cartao" aria-labelledby="titulo-lancar">
+  <h2 id="titulo-lancar">Lançar em outra data</h2>
+  {% if erro %}<p class="alerta" role="alert" id="erro-lancar">{{ erro }}</p>{% endif %}
+  <form method="post" action="/historico/lancamentos" class="formulario">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="contador" value="{{ contador.id }}">
+    <div class="linha-tres">
+      <div class="campo">
+        <label for="novo-quantidade">Quantidade</label>
+        <input id="novo-quantidade" name="quantidade" type="number" inputmode="numeric" min="1" step="1" value="{{ novo.quantidade }}" required>
+      </div>
+      <div class="campo">
+        <label for="novo-data">Data</label>
+        <input id="novo-data" name="data" type="date" value="{{ novo.data }}" required>
+      </div>
+      <div class="campo">
+        <label for="novo-hora">Hora</label>
+        <input id="novo-hora" name="hora" type="time" value="{{ novo.hora }}" required>
+      </div>
+    </div>
+    <button type="submit" class="botao">Lançar</button>
+  </form>
+</section>
+
+<section class="cartao" aria-labelledby="titulo-lancamentos">
+  <h2 id="titulo-lancamentos">Lançamentos</h2>
+  {% if lancamentos %}
+  <ul class="lista-lancamentos">
+    {% for l in lancamentos %}
+    {% set quando = local(l.ocorrido_em) %}
+    {% set substituto = substitutos.get(l.id) %}
+    <li id="lancamento-{{ l.id }}" class="{% if l.cancelado_em %}cancelado{% endif %}">
+      <div class="lancamento-dados">
+        <span class="lancamento-quando">{{ "%02d/%02d" % (quando.day, quando.month) }} · {{ quando.strftime("%H:%M") }}</span>
+        {% if l.cancelado_em %}<del>{{ l.quantidade }} {{ contador.unidade }}</del>{% else %}<strong>{{ l.quantidade }} {{ contador.unidade }}</strong>{% endif %}
+        {% if l.tipo == "ajuste" %}<span class="selo">ajuste</span>{% endif %}
+        {% if substituto %}<span class="estado">corrigido · <a href="#lancamento-{{ substituto.id }}">ver correção</a></span>
+        {% elif l.cancelado_em %}<span class="estado">cancelado</span>{% endif %}
+        {% if l.substitui_id %}<span class="estado">correção</span>{% endif %}
+      </div>
+      {% if not l.cancelado_em %}
+      <div class="botoes">
+        <a class="botao botao-discreto" href="/historico/lancamentos/{{ l.id }}/corrigir"
+           aria-label="Corrigir lançamento de {{ l.quantidade }} {{ contador.unidade }} em {{ '%02d/%02d' % (quando.day, quando.month) }} às {{ quando.strftime('%H:%M') }}">Corrigir</a>
+        <form method="post" action="/historico/lancamentos/{{ l.id }}/cancelar">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" class="botao botao-discreto"
+                  aria-label="Cancelar lançamento de {{ l.quantidade }} {{ contador.unidade }} em {{ '%02d/%02d' % (quando.day, quando.month) }} às {{ quando.strftime('%H:%M') }}">Cancelar</button>
+        </form>
+      </div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="suave">Nenhum lançamento neste período.</p>
+  {% endif %}
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}

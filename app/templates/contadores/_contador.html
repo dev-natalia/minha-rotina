@@ -1,0 +1,49 @@
+{#- Cartão de um contador. Recebe: contador, total, periodo, pode_desfazer, voltar, erro (opcional). -#}
+{% set c = contador %}
+{% set rotulo = ROTULO_PERIODO[periodo] %}
+{% set meta = texto_meta(c, total, periodo) %}
+{% set alvo = "#contador-%d" % c.id %}
+<article class="contador" id="contador-{{ c.id }}" aria-labelledby="nome-contador-{{ c.id }}">
+  <div class="contador-info">
+    <h2 id="nome-contador-{{ c.id }}">{{ c.nome }}</h2>
+    <p class="contador-detalhe">{{ meta if meta else c.unidade ~ " · " ~ rotulo }}</p>
+    {% if erro %}<p class="contador-erro" role="alert">{{ erro }}</p>{% endif %}
+  </div>
+  <div class="contador-controles">
+    <form method="post" action="/contadores/{{ c.id }}/menos"
+          hx-post="/contadores/{{ c.id }}/menos" hx-target="{{ alvo }}" hx-swap="outerHTML" hx-sync="closest .contador:drop">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="periodo" value="{{ periodo }}">
+      <input type="hidden" name="voltar" value="{{ voltar }}">
+      <button type="submit" class="botao-menos" aria-label="Remover último lançamento de {{ c.nome }}"{% if not pode_desfazer %} disabled{% endif %}>−</button>
+    </form>
+    <button type="button" class="contador-valor" data-abrir-dialogo="dialogo-{{ c.id }}"
+            aria-label="{{ total }} {{ c.unidade }} {{ rotulo }}. Lançar outra quantidade">{{ total }}</button>
+    <form method="post" action="/contadores/{{ c.id }}/mais"
+          hx-post="/contadores/{{ c.id }}/mais" hx-target="{{ alvo }}" hx-swap="outerHTML" hx-sync="closest .contador:drop">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="token" value="{{ novo_token() }}">
+      <input type="hidden" name="periodo" value="{{ periodo }}">
+      <input type="hidden" name="voltar" value="{{ voltar }}">
+      <button type="submit" class="botao-mais" aria-label="Adicionar {{ c.passo }} em {{ c.nome }}">+</button>
+    </form>
+  </div>
+  <dialog id="dialogo-{{ c.id }}" class="dialogo-quantidade" aria-labelledby="titulo-dialogo-{{ c.id }}">
+    <form method="post" action="/contadores/{{ c.id }}/quantidade"
+          hx-post="/contadores/{{ c.id }}/quantidade" hx-target="{{ alvo }}" hx-swap="outerHTML" hx-sync="closest .contador:drop">
+      <h3 id="titulo-dialogo-{{ c.id }}">Lançar em {{ c.nome }}</h3>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="token" value="{{ novo_token() }}">
+      <input type="hidden" name="periodo" value="{{ periodo }}">
+      <input type="hidden" name="voltar" value="{{ voltar }}">
+      <div class="campo">
+        <label for="quantidade-{{ c.id }}">Quantidade ({{ c.unidade }})</label>
+        <input id="quantidade-{{ c.id }}" name="quantidade" type="number" inputmode="numeric" min="1" max="1000000" step="1" required>
+      </div>
+      <div class="botoes">
+        <button type="submit" class="botao botao-primario">Confirmar</button>
+        <button type="button" class="botao" data-fechar-dialogo>Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+</article>

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block titulo %}{{ "Editar atividade" if atividade else "Nova atividade" }} · minha-rotina{% endblock %}
+{% block estilos %}<link rel="stylesheet" href="/static/css/rotina.css">{% endblock %}
+{% block conteudo %}
+<p><a href="/rotina?semana={{ segunda.isoformat() }}{% if atividade %}&dia={{ atividade.data.isoformat() }}{% endif %}">← Voltar para a rotina</a></p>
+<h1>{{ "Editar atividade" if atividade else "Nova atividade" }}</h1>
+{% if atividade %}<p class="suave">{{ nomes_dias[atividade.data.weekday()] }}, {{ atividade.data.day }}/{{ "%02d" % atividade.data.month }}</p>{% endif %}
+
+{% if erro %}<p class="alerta" role="alert" id="erro-form">{{ erro }}</p>{% endif %}
+
+<form method="post" action="{{ '/rotina/atividades/%d' % atividade.id if atividade else '/rotina/atividades' }}" class="formulario cartao">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  {% if not atividade %}<input type="hidden" name="semana" value="{{ segunda.isoformat() }}">{% endif %}
+
+  <div class="campo">
+    <label for="titulo">Título</label>
+    <input id="titulo" name="titulo" value="{{ valores.titulo }}" required maxlength="120" autocomplete="off"
+           {% if erro %}aria-describedby="erro-form"{% endif %}>
+  </div>
+
+  <div class="linha-campos">
+    <div class="campo">
+      <label for="hora_inicio">Início</label>
+      <input id="hora_inicio" name="hora_inicio" type="time" value="{{ valores.hora_inicio }}" required>
+    </div>
+    <div class="campo">
+      <label for="hora_fim">Fim</label>
+      <input id="hora_fim" name="hora_fim" type="time" value="{{ valores.hora_fim }}" required>
+    </div>
+  </div>
+
+  {% if not atividade %}
+  <fieldset class="dias">
+    <legend>Dias da semana</legend>
+    <div class="opcoes-dias">
+      {% for i in range(7) %}
+      <label class="dia-opcao">
+        <input type="checkbox" name="dias" value="{{ i }}" {% if i in valores.dias %}checked{% endif %}>
+        <span aria-hidden="true">{{ curtos_dias[i] }}</span>
+        <span class="sr-only">{{ nomes_dias[i] }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  {% endif %}
+
+  <div class="campo">
+    <label for="descricao">Descrição <span class="suave">(opcional)</span></label>
+    <textarea id="descricao" name="descricao" rows="2">{{ valores.descricao }}</textarea>
+  </div>
+
+  <fieldset class="cores">
+    <legend>Cor</legend>
+    <div class="opcoes-cores">
+      {% for valor, nome in cores %}
+      <label class="cor-opcao cor-{{ valor }}">
+        <input type="radio" name="cor" value="{{ valor }}" {% if valores.cor == valor or (not valores.cor and loop.first) %}checked{% endif %}>
+        <span class="sr-only">{{ nome }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+
+  {% if atividade and atividade.grupo_id %}
+  <fieldset>
+    <legend>Aplicar alterações em</legend>
+    <label class="opcao"><input type="radio" name="escopo" value="dia" {% if valores.escopo != "grupo" %}checked{% endif %}> Só este dia</label>
+    <label class="opcao"><input type="radio" name="escopo" value="grupo" {% if valores.escopo == "grupo" %}checked{% endif %}> Todos os dias desta semana</label>
+  </fieldset>
+  {% endif %}
+
+  <button type="submit" class="botao botao-primario">{{ "Salvar" if atividade else "Criar atividade" }}</button>
+</form>
+
+{% if atividade %}
+<form method="post" action="/rotina/atividades/{{ atividade.id }}/excluir" class="excluir">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  {% if atividade.grupo_id %}
+  <button type="submit" name="escopo" value="dia" class="botao botao-perigo">Excluir só este dia</button>
+  <button type="submit" name="escopo" value="grupo" class="botao botao-perigo">Excluir todos os dias desta semana</button>
+  {% else %}
+  <button type="submit" name="escopo" value="dia" class="botao botao-perigo">Excluir atividade</button>
+  {% endif %}
+</form>
+{% endif %}
+{% endblock %}

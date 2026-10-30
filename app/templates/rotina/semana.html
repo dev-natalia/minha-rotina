@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block titulo %}Rotina · minha-rotina{% endblock %}
+{% block estilos %}<link rel="stylesheet" href="/static/css/rotina.css">{% endblock %}
+{% block classe_main %}conteudo{% if vista == "grade" %} conteudo-largo{% endif %}{% endblock %}
+{% block conteudo %}
+<div class="rotina" data-vista="{{ vista }}" data-tem-cookie="{{ 'sim' if tem_cookie_vista else 'nao' }}"
+     data-semana="{{ segunda.isoformat() }}" data-dia="{{ dia_atual.isoformat() }}">
+
+  <div class="cabecalho-pagina">
+    <h1>Rotina</h1>
+    <a class="botao botao-primario" href="/rotina/atividades/nova?semana={{ segunda.isoformat() }}&dia={{ dia_atual.isoformat() }}">
+      <span aria-hidden="true">+</span> Nova atividade
+    </a>
+  </div>
+
+  <nav class="navegacao-semana" aria-label="Semanas">
+    <a class="botao-icone" href="/rotina?semana={{ anterior.isoformat() }}" aria-label="Semana anterior">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22"><path d="M15 5l-7 7 7 7"/></svg>
+    </a>
+    <p class="titulo-semana" aria-live="polite">{{ titulo_semana }}</p>
+    <a class="botao-icone" href="/rotina?semana={{ proxima.isoformat() }}" aria-label="Próxima semana">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22"><path d="M9 5l7 7-7 7"/></svg>
+    </a>
+    {% if not (segunda <= hoje and hoje.toordinal() < segunda.toordinal() + 7) %}
+    <a class="botao botao-discreto" href="/rotina">Hoje</a>
+    {% endif %}
+  </nav>
+
+  <ul class="seletor" aria-label="Visualização">
+    {% for valor, rotulo in [("grade", "Grade"), ("dia", "Dia"), ("lista", "Lista")] %}
+    <li><a href="/rotina?semana={{ segunda.isoformat() }}&dia={{ dia_atual.isoformat() }}&vista={{ valor }}"
+           {% if vista == valor %}aria-current="true"{% endif %}>{{ rotulo }}</a></li>
+    {% endfor %}
+  </ul>
+
+  {% if not atividades %}
+  <div class="cartao vazio">
+    <h2>Semana sem rotina</h2>
+    <p class="suave">Copie a rotina da semana anterior ou crie a primeira atividade.</p>
+    <form method="post" action="/rotina/copiar-semana">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="semana" value="{{ segunda.isoformat() }}">
+      <button type="submit" class="botao botao-primario">Copiar semana anterior</button>
+    </form>
+  </div>
+  {% endif %}
+
+  {% if vista == "grade" %}{% include "rotina/_grade.html" %}
+  {% elif vista == "lista" %}{% include "rotina/_lista.html" %}
+  {% else %}{% include "rotina/_dia.html" %}{% endif %}
+
+  {% if atividades %}
+  <form method="post" action="/rotina/copiar-semana" class="acao-secundaria">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="semana" value="{{ segunda.isoformat() }}">
+    <button type="submit" class="botao botao-discreto">Copiar semana anterior</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

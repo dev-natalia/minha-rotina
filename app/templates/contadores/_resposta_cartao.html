@@ -1,0 +1,2 @@
+{% include "contadores/_contador.html" %}
+<div id="anuncio" hx-swap-oob="innerHTML">{% if erro %}{{ erro }}{% else %}{{ contador.nome }}: {{ total }} {{ ROTULO_PERIODO[periodo] }}{% endif %}</div>

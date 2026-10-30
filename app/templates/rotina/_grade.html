@@ -1,0 +1,34 @@
+{% set total_min = (fim_grade - inicio_grade) * 60 %}
+<div class="grade" style="--horas: {{ fim_grade - inicio_grade }}">
+  <div class="grade-cabecalho">
+    <span></span>
+    {% for d in dias %}
+    <a href="/rotina?semana={{ segunda.isoformat() }}&dia={{ d.data.isoformat() }}&vista=dia"
+       class="grade-dia{% if d.data == hoje %} hoje{% endif %}" aria-label="{{ d.nome }}, {{ d.data.day }}">
+      <span class="curto" aria-hidden="true">{{ d.curto }}</span>
+      <span class="numero" aria-hidden="true">{{ d.data.day }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  <div class="grade-corpo">
+    <div class="grade-horas" aria-hidden="true">
+      {% for h in range(inicio_grade, fim_grade) %}<span>{{ "%02d" % h }}</span>{% endfor %}
+    </div>
+    {% for d in dias %}
+    <div class="grade-coluna{% if d.data == hoje %} hoje{% endif %}">
+      {% for b in blocos_por_dia[d.data] %}
+      {% set a = b.atividade %}
+      {% set ini = a.hora_inicio.hour * 60 + a.hora_inicio.minute - inicio_grade * 60 %}
+      {% set dur = a.hora_fim.hour * 60 + a.hora_fim.minute - (a.hora_inicio.hour * 60 + a.hora_inicio.minute) %}
+      <a class="bloco cor-{{ a.cor or 'verde' }}" href="/rotina/atividades/{{ a.id }}/editar"
+         aria-label="{{ a.titulo }}, {{ d.nome|lower }}, {{ a.hora_inicio.strftime('%H:%M') }} às {{ a.hora_fim.strftime('%H:%M') }}"
+         style="top: {{ '%.3f' % (ini / total_min * 100) }}%; height: {{ '%.3f' % (dur / total_min * 100) }}%;
+                left: {{ '%.3f' % (b.faixa / b.total_faixas * 100) }}%; width: {{ '%.3f' % (100 / b.total_faixas) }}%;">
+        <span class="bloco-titulo">{{ a.titulo }}</span>
+        <span class="bloco-hora">{{ a.hora_inicio.strftime('%H:%M') }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</div>

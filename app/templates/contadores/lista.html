@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}Contadores · minha-rotina{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <h1>Contadores</h1>
+  <a class="botao botao-discreto" href="/contadores/gerenciar">Gerenciar</a>
+</div>
+
+<ul class="seletor" aria-label="Período">
+  {% for valor, nome in periodos %}
+  <li><a href="/contadores?periodo={{ valor }}" {% if valor == periodo %}aria-current="true"{% endif %}>{{ nome }}</a></li>
+  {% endfor %}
+</ul>
+
+{% if contadores %}
+<div class="lista-contadores">
+  {% for contador in contadores %}
+  {% with total = totais.get(contador.id, 0), pode_desfazer = contador.id in desfazer %}
+  {% include "contadores/_contador.html" %}
+  {% endwith %}
+  {% endfor %}
+</div>
+{% else %}
+<div class="cartao vazio">
+  <h2>Você ainda não tem contadores.</h2>
+  <p class="suave">Crie um para registrar cigarros, copos de água, minutos de estudo ou o que quiser acompanhar.</p>
+  <a class="botao botao-primario" href="/contadores/novo">Criar contador</a>
+</div>
+{% endif %}
+{% endblock %}

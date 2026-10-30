@@ -1,0 +1,73 @@
+/* ---- Contadores (tela própria e painel) ---- */
+
+.cabecalho-pagina { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.cabecalho-pagina h1 { margin: 0; }
+
+.seletor {
+  list-style: none; margin: 0 0 16px; padding: 4px; display: inline-flex; gap: 4px;
+  background: var(--superficie); border: 1px solid var(--borda); border-radius: 999px;
+}
+.seletor a {
+  display: inline-flex; align-items: center; min-height: var(--toque); padding: 0 16px; border-radius: 999px;
+  color: var(--texto-suave); font-weight: 600; text-decoration: none;
+}
+.seletor a[aria-current="true"] { background: var(--acento); color: #fff; }
+
+.vazio { text-align: center; }
+
+.lista-contadores { display: grid; gap: 10px; }
+
+.contador {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio);
+  padding: 12px 14px;
+}
+.contador-info { min-width: 0; }
+.contador-info h2 { font-family: var(--sans); font-size: 1rem; font-weight: 600; margin: 0; }
+.contador-detalhe { margin: 2px 0 0; font-size: .85rem; color: var(--texto-suave); }
+.contador-erro { margin: 4px 0 0; font-size: .85rem; color: var(--alerta); font-weight: 600; }
+
+.contador-controles { display: flex; align-items: center; gap: 6px; flex: none; }
+.contador-controles form { margin: 0; }
+
+.botao-menos, .botao-mais {
+  width: var(--toque); height: var(--toque); border-radius: 50%; border: 0; cursor: pointer;
+  font: 600 1.4rem/1 var(--sans); display: inline-flex; align-items: center; justify-content: center;
+}
+.botao-menos { background: var(--acento-fundo); color: var(--acento-escuro); }
+.botao-mais { background: var(--acento); color: #fff; }
+.botao-mais:hover { background: var(--acento-escuro); }
+.botao-menos:disabled { opacity: .4; cursor: not-allowed; }
+
+.contador-valor {
+  min-width: 48px; min-height: var(--toque); padding: 0 6px; border: 0; border-radius: var(--raio-pequeno);
+  background: transparent; color: var(--texto); cursor: pointer;
+  font: 700 1.6rem/1 var(--sans); font-variant-numeric: tabular-nums;
+  text-decoration: underline dotted var(--borda-forte); text-underline-offset: 6px;
+}
+.contador-valor:hover { background: var(--acento-fundo); }
+
+.contador.htmx-swapping { opacity: .6; transition: opacity .15s; }
+.contador .htmx-request.botao-mais, .contador.htmx-request .contador-valor { opacity: .7; }
+
+.dialogo-quantidade {
+  border: 0; border-radius: var(--raio); padding: 20px; width: min(340px, calc(100vw - 32px));
+  background: var(--superficie); color: var(--texto); box-shadow: 0 12px 40px rgba(0, 0, 0, .2);
+}
+.dialogo-quantidade::backdrop { background: rgba(43, 42, 39, .35); }
+.dialogo-quantidade form { display: grid; gap: 14px; }
+.dialogo-quantidade h3 { margin: 0; }
+
+/* Gerenciar e formulário */
+.lista-gerenciar { list-style: none; margin: 0; padding: 0; }
+.linha-contador { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 0; }
+.linha-contador + .linha-contador { border-top: 1px solid var(--borda); }
+.linha-contador > div:first-child { display: grid; gap: 2px; }
+.linha-contador .suave { font-size: .85rem; }
+.linha-contador form { margin: 0; }
+.linha-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.linha-meta { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.2fr); gap: 8px; }
+fieldset { border: 0; margin: 0; padding: 0; }
+legend { font-weight: 600; font-size: .95rem; margin-bottom: 6px; padding: 0; }
+.dica { font-size: .85rem; margin: 6px 0 0; }
+.botoes { display: flex; flex-wrap: wrap; gap: 8px; }

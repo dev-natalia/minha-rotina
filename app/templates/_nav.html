@@ -1,0 +1,20 @@
+{% set caminho = request.url.path %}
+{% set itens = [
+  ("/", "Início", "M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"),
+  ("/rotina", "Rotina", "M4 5h16v15H4zM4 9h16M9 3v4M15 3v4"),
+  ("/contadores", "Contadores", "M12 5v14M5 12h14"),
+  ("/historico", "Histórico", "M12 7v5l3 2M3 12a9 9 0 1 0 3-6.7M3 4v4h4"),
+] %}
+<nav class="nav" aria-label="Principal">
+  <ul>
+    {% for href, rotulo, icone in itens %}
+    {% set atual = (caminho == "/" and href == "/") or (href != "/" and caminho.startswith(href)) %}
+    <li>
+      <a href="{{ href }}"{% if atual %} aria-current="page"{% endif %}>
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22"><path d="{{ icone }}"/></svg>
+        <span>{{ rotulo }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
